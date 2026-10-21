@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deadline Reality Check — Your ambition has a schedule. Does it fit?</title>
+  <meta name="description" content="A deterministic scheduling engine that checks whether your student workload realistically fits into your available hours before deadlines.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f46e5'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='50' fill='white'>⚖️</text></svg>">
+</head>
+<body>
+
+  <!-- Top Application Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-wrapper">
+        <div class="brand-icon" aria-hidden="true">⏱️</div>
+        <div class="brand-titles">
+          <h1>Deadline Reality Check</h1>
+          <p>Your ambition has a schedule. Does it fit?</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="header-date-badge" id="header-today-date" title="Current planning date">
+          Today
+        </div>
+        <button id="open-data-modal-btn" class="btn btn-secondary btn-sm" title="Backup, Restore, or Export Data">
+          💾 Data
+        </button>
+        <button id="open-settings-btn" class="btn btn-secondary btn-sm" title="Configure Realistic Daily Availability">
+          ⚙️ Hours & Buffer
+        </button>
+        <button id="theme-toggle-btn" class="btn btn-secondary btn-icon" title="Toggle Light / Dark Mode" aria-label="Toggle theme">
+          <span id="theme-toggle-icon">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-main">
+
+    <!-- Notice / Demo Banner Container -->
+    <div id="notice-banner-container"></div>
+
+    <!-- Top Summary Metrics Grid -->
+    <section id="metrics-grid" class="metrics-grid" aria-label="Key Schedule Metrics">
+      <!-- Injected by UI.renderMetricsGrid -->
+    </section>
+
+    <!-- The Signature Reality Check Hero Assessment -->
+    <section id="reality-check-hero" class="reality-check-hero" aria-label="Reality Check Assessment">
+      <!-- Injected by UI.renderRealityCheckHero -->
+    </section>
+
+    <!-- Middle Grid: Focus Action & Recommendations -->
+    <div class="dashboard-middle-grid">
+      <!-- Next Priority Task -->
+      <section id="focus-card-container" class="focus-card" aria-label="Next Recommended Work">
+        <!-- Injected by UI.renderFocusCard -->
+      </section>
+
+      <!-- Actionable Rescheduling Suggestions -->
+      <section id="recommendations-container" class="recommendations-card" aria-label="Actionable Recommendations">
+        <!-- Injected by UI.renderRecommendations -->
+      </section>
+    </div>
+
+    <!-- Workload & Capacity Planning Section (Daily & Weekly Views) -->
+    <section id="planning-container" class="planning-section" aria-label="Schedule Timeline">
+      <!-- Injected by UI.renderPlanningSection -->
+    </section>
+
+    <!-- Task Management Section -->
+    <section class="tasks-section" aria-label="Task Management">
+      <div class="tasks-section-header">
+        <div>
+          <h3>Tasks & Deliverables</h3>
+        </div>
+        <button id="add-task-btn" class="btn btn-primary">
+          + Add New Task
+        </button>
+      </div>
+
+      <!-- Filter & Search Toolbar -->
+      <div class="task-toolbar">
+        <div class="search-input-wrapper">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input type="text" id="task-search-input" placeholder="Search tasks by title, note, or course..." aria-label="Search tasks">
+        </div>
+
+        <div class="toolbar-filters">
+          <select id="task-status-filter" class="filter-select" aria-label="Filter by status">
+            <option value="all">All Statuses</option>
+            <option value="active" selected>Active Deliverables</option>
+            <option value="completed">Completed Deliverables</option>
+          </select>
+
+          <select id="task-category-filter" class="filter-select" aria-label="Filter by category">
+            <option value="all">All Categories</option>
+            <option value="assignment">Assignments</option>
+            <option value="exam">Exam Prep</option>
+            <option value="project">Projects</option>
+            <option value="personal">Personal</option>
+            <option value="other">Other</option>
+          </select>
+
+          <select id="task-priority-filter" class="filter-select" aria-label="Filter by priority">
+            <option value="all">All Priorities</option>
+            <option value="urgent">Urgent</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+
+          <select id="task-sort-filter" class="filter-select" aria-label="Sort tasks">
+            <option value="deadline">Sort by Deadline</option>
+            <option value="priority">Sort by Priority</option>
+            <option value="duration">Sort by Effort</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Task Cards Container -->
+      <div id="task-list-container">
+        <!-- Injected by UI.renderTaskList -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Application Footer -->
+  <footer class="app-footer">
+    <p><strong>Deadline Reality Check</strong> — Deterministic local scheduling engine for students and high-output planners.</p>
+    <p style="margin-top: 0.25rem;">Zero cloud tracking. All scheduling calculations run client-side in vanilla JavaScript.</p>
+  </footer>
+
+  <!-- Modal: Add / Edit Task -->
+  <div id="task-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="task-modal-title">Add New Task</h3>
+        <button id="close-task-modal-btn" class="btn btn-outline btn-icon" aria-label="Close modal">✕</button>
+      </div>
+
+      <form id="task-form">
+        <div class="modal-body">
+          <div id="task-form-errors" class="form-error" style="display: none; padding: 0.5rem; background: var(--status-overloaded-bg); border-radius: var(--radius-sm);"></div>
+
+          <div class="form-group">
+            <label for="task-title" class="form-label">Task Title *</label>
+            <input type="text" id="task-title" name="title" class="form-input" placeholder="e.g. Organic Chemistry Problem Set 3" required maxlength="200">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="task-est-hours" class="form-label">Total Estimated Effort (Hours) *</label>
+              <input type="number" id="task-est-hours" name="estimatedHours" class="form-input" min="0.25" max="240" step="0.25" value="2.0" required>
+              <span class="form-hint">e.g. 2.5 = 2h 30m</span>
+            </div>
+            <div class="form-group">
+              <label for="task-rem-hours" class="form-label">Remaining Effort (Hours) *</label>
+              <input type="number" id="task-rem-hours" name="remainingHours" class="form-input" min="0" max="240" step="0.25" value="2.0" required>
+              <span class="form-hint">Update if partially finished or takes longer</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="task-deadline-date" class="form-label">Deadline Date *</label>
+              <input type="date" id="task-deadline-date" name="deadlineDate" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label for="task-deadline-time" class="form-label">Deadline Time (Optional)</label>
+              <input type="time" id="task-deadline-time" name="deadlineTime" class="form-input">
+              <span class="form-hint">Default 23:59 if omitted</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="task-priority" class="form-label">Priority</label>
+              <select id="task-priority" name="priority" class="form-select">
+                <option value="urgent">Urgent (Highest focus)</option>
+                <option value="high">High</option>
+                <option value="medium" selected>Medium (Standard)</option>
+                <option value="low">Low (Flexible)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="task-category" class="form-label">Category</label>
+              <select id="task-category" name="category" class="form-select">
+                <option value="assignment" selected>📝 Assignment</option>
+                <option value="exam">🎯 Exam Preparation</option>
+                <option value="project">🚀 Project</option>
+                <option value="personal">🌱 Personal</option>
+                <option value="other">📌 Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="task-importance" class="form-label">Deadline Flexibility</label>
+            <select id="task-importance" name="importance" class="form-select">
+              <option value="mandatory">Strict / Mandatory (Cannot be delayed)</option>
+              <option value="important" selected>Important (Prefer to finish on time)</option>
+              <option value="flexible">Flexible / Stretch (Can be rescheduled if overloaded)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="task-description" class="form-label">Brief Description (Optional)</label>
+            <input type="text" id="task-description" name="description" class="form-input" placeholder="e.g. Problems 12-25, focus on reaction mechanisms" maxlength="300">
+          </div>
+
+          <div class="form-group">
+            <label for="task-notes" class="form-label">Notes & Constraints (Optional)</label>
+            <textarea id="task-notes" name="notes" class="form-textarea" rows="2" placeholder="Any special context, resources, or reminders" maxlength="500"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('task-modal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Availability & Buffer Settings -->
+  <div id="settings-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="settings-modal-title">Realistic Daily Availability</h3>
+        <button id="close-settings-btn" class="btn btn-outline btn-icon" aria-label="Close modal">✕</button>
+      </div>
+
+      <form id="settings-form">
+        <div class="modal-body">
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
+            Define how many hours you can <strong>realistically</strong> dedicate to focused work on each day.
+            Never assume you can work all day without interruptions!
+          </p>
+
+          <div class="availability-grid">
+            <div class="day-avail-box">
+              <span class="day-avail-name">Monday</span>
+              <input type="number" name="mon" class="form-input" min="0" max="24" step="0.5" required>
+            </div>
+            <div class="day-avail-box">
+              <span class="day-avail-name">Tuesday</span>
+              <input type="number" name="tue" class="form-input" min="0" max="24" step="0.5" required>
+            </div>
+            <div class="day-avail-box">
+              <span class="day-avail-name">Wednesday</span>
+              <input type="number" name="wed" class="form-input" min="0" max="24" step="0.5" required>
+            </div>
+            <div class="day-avail-box">
+              <span class="day-avail-name">Thursday</span>
+              <input type="number" name="thu" class="form-input" min="0" max="24" step="0.5" required>
+            </div>
+            <div class="day-avail-box">
+              <span class="day-avail-name">Friday</span>
+              <input type="number" name="fri" class="form-input" min="0" max="24" step="0.5" required>
+            </div>
+            <div class="day-avail-box">
+              <span class="day-avail-name">Saturday</span>
+              <input type="number" name="sat" class="form-input" min="0" max="24" step="0.5" required>
+            </div>
+            <div class="day-avail-box">
+              <span class="day-avail-name">Sunday</span>
+              <input type="number" name="sun" class="form-input" min="0" max="24" step="0.5" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label for="dailyBufferPercent" class="form-label">Daily Interruption & Rest Buffer (%)</label>
+              <span id="buffer-val-label" style="font-weight: 700; font-size: 0.85rem; color: var(--accent-primary);">15%</span>
+            </div>
+            <input type="range" id="dailyBufferPercent" name="dailyBufferPercent" min="0" max="50" step="5" value="15"
+                   oninput="document.getElementById('buffer-val-label').textContent = this.value + '%'">
+            <span class="form-hint">Deducts time for inevitable transitions, breaks, and unforeseen interruptions.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="dailyMaxHours" class="form-label">Maximum Daily Work Cap (Hours)</label>
+            <input type="number" id="dailyMaxHours" name="dailyMaxHours" class="form-input" min="1" max="24" step="1" value="8">
+            <span class="form-hint">Prevents the scheduler from assigning an unhealthy schedule even on open days.</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('settings-modal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Availability</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Data Backup & Restore -->
+  <div id="data-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="data-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="data-modal-title">Data Management & Backup</h3>
+        <button id="close-data-modal-btn" class="btn btn-outline btn-icon" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="background: var(--bg-surface-subtle); border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--border-subtle);">
+            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem;">Export JSON Backup</h4>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.75rem;">Download all your tasks, deadlines, and availability preferences as a standard JSON file.</p>
+            <button id="export-json-btn" class="btn btn-secondary btn-sm">📥 Export Backup (.json)</button>
+          </div>
+
+          <div style="background: var(--bg-surface-subtle); border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--border-subtle);">
+            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem;">Import JSON Backup</h4>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.75rem;">Restore tasks and availability settings from a previously saved JSON file.</p>
+            <label class="btn btn-secondary btn-sm" style="display: inline-block; cursor: pointer;">
+              📤 Choose Backup File
+              <input type="file" id="import-file-input" accept=".json,application/json" style="display: none;">
+            </label>
+          </div>
+
+          <div style="background: var(--status-overloaded-bg); border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--status-overloaded-border);">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--status-overloaded-text); margin-bottom: 0.35rem;">Reset Workspace</h4>
+            <p style="font-size: 0.82rem; color: var(--status-overloaded-text); margin-bottom: 0.75rem;">Erase all tasks and reset availability back to factory settings.</p>
+            <button id="reset-all-data-btn" class="btn btn-danger btn-sm">⚠️ Reset All Data</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('data-modal').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Confirmation Dialog -->
+  <div id="confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 id="confirm-modal-title">Please Confirm</h3>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-modal-message" style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.5;"></p>
+      </div>
+      <div class="modal-footer">
+        <button id="confirm-modal-cancel" type="button" class="btn btn-secondary">Cancel</button>
+        <button id="confirm-modal-ok" type="button" class="btn btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Scripts (Vanilla ES6, zero external dependencies) -->
+  <script src="js/date-utils.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/scheduler.js"></script>
+  <script src="js/recommendations.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
