@@ -84,8 +84,6 @@ Deadline Reality Check replaces wishful planning with **mathematical reality**, 
 +------------------------------------------------------------------------------------+
 ```
 
-*(Screenshots can be added under `assets/screenshots/`)*
-
 ---
 
 ## How the Scheduling Algorithm Works
